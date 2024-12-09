@@ -47,20 +47,35 @@ namespace MouseLRSwaper
             if (nCode >= 0 && wParam == (IntPtr)WM_MOUSEMOVE)
             {
                 MSLLHOOKSTRUCT hookStruct = (MSLLHOOKSTRUCT)Marshal.PtrToStructure(lParam, typeof(MSLLHOOKSTRUCT));
+                int screenWidth = (int)SystemParameters.PrimaryScreenWidth;
+                int screenHeight = (int)SystemParameters.PrimaryScreenHeight;
                 int mouseX = hookStruct.pt.x; // Reverse the X coordinate
                 // get screen width
-                int screenWidth = (int)SystemParameters.PrimaryScreenWidth;
-                Debug.WriteLine("mouseX: " + mouseX + " mouseXBefore: " + mouseXBefore);
+                if (mouseX < 0)
+                {
+                    Debug.WriteLine("mouseX: " + mouseX + " mouseY: " + hookStruct.pt.y);
+                    Debug.WriteLine("mouseXBefore: " + mouseXBefore);
+                    mouseXBefore = screenWidth / 2 - 1;
+                    SetCursorPos(screenWidth / 2, screenHeight / 2);
+                    
+                    return (IntPtr)1;
+                }
+                
+                // Debug.WriteLine("mouseX: " + mouseX + " mouseXBefore: " + mouseXBefore);
                 if (mouseXBefore == 0 && mouseX != 0 && mouseX != screenWidth && mouseX != screenWidth - 1 && mouseX != 1)
                 {
                     mouseXBefore = mouseX;
                 }
                 if (mouseXBefore < mouseX)
                 {
-                    Debug.WriteLine(" mouse move to right");
+                    // Debug.WriteLine(" mouse move to right");
                      // Mouse is moving to the right -> move the cursor to the left
                      int  diff =  Math.Abs(mouseX - mouseXBefore);
-                     Debug.WriteLine("diff1 : " + diff);
+                     Debug.WriteLine("mouseX : " + mouseX + " diff1 : " + diff);
+                     if (diff > 300)
+                     {
+                         diff = 10;
+                     }
                      if (( mouseX - diff*2) < 0)
                      {
                          mouseX = 0;
@@ -75,10 +90,14 @@ namespace MouseLRSwaper
 
                 } else if (mouseXBefore > mouseX)
                 {
-                    Debug.WriteLine(" mouse move to left");
+                    // Debug.WriteLine(" mouse move to left");
                     // Mouse is moving to the left -> move the cursor to the right
                     int  diff =  Math.Abs(mouseXBefore - mouseX );
-                    Debug.WriteLine("diff2 : " + diff);
+                    Debug.WriteLine("mouseX : " + mouseX + "diff2 : " + diff);
+                    if (diff > 300)
+                    {
+                        diff = 10;
+                    }
                     if (( mouseX + diff*2) > screenWidth)
                     {
                         mouseX = screenWidth;
@@ -89,8 +108,9 @@ namespace MouseLRSwaper
                     }
                 }
                 mouseXBefore = mouseX;
-                Debug.WriteLine("mouseX: " + mouseX);
-                Debug.WriteLine("mouseXBefore: " + mouseXBefore);
+                // Debug.WriteLine("mouseX: " + mouseX);
+                // Debug.WriteLine("mouseXBefore: " + mouseXBefore);
+                
                 SetCursorPos(mouseX, hookStruct.pt.y);
                 return (IntPtr)1; // Block the event    
             }
