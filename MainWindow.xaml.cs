@@ -47,9 +47,22 @@ namespace MouseLRSwaper
             if (nCode >= 0 && wParam == (IntPtr)WM_MOUSEMOVE)
             {
                 MSLLHOOKSTRUCT hookStruct = (MSLLHOOKSTRUCT)Marshal.PtrToStructure(lParam, typeof(MSLLHOOKSTRUCT));
+
+                if (hookStruct.flags > 0 || hookStruct.dwExtraInfo > 0)
+                {
+                    ShowCursor(true);
+                    return CallNextHookEx(_hookID, nCode, wParam, lParam);
+                    
+                } 
+                if (hookStruct.pt.x <0 || hookStruct.pt.y < 0)
+                {
+                    ShowCursor(true);
+                    return CallNextHookEx(_hookID, nCode, wParam, lParam);
+                }
                 int mouseX = hookStruct.pt.x; // Reverse the X coordinate
                 // get screen width
                 int screenWidth = (int)SystemParameters.PrimaryScreenWidth;
+                
                 Debug.WriteLine("mouseX: " + mouseX + " mouseXBefore: " + mouseXBefore);
                 if (mouseXBefore == 0 && mouseX != 0 && mouseX != screenWidth && mouseX != screenWidth - 1 && mouseX != 1)
                 {
@@ -130,5 +143,10 @@ namespace MouseLRSwaper
         [DllImport("user32.dll")]
         [return: MarshalAs(UnmanagedType.Bool)]
         private static extern bool SetCursorPos(int X, int Y);
+        
+        
+        [DllImport("user32.dll", CharSet = CharSet.Auto, SetLastError = true)]
+        static extern int ShowCursor(bool bShow);
+
     }
 }
